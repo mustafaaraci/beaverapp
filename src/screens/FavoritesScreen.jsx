@@ -109,15 +109,14 @@ const FavoritesScreen = ({ navigation }) => {
         </View>
       )}
 
-      {/* Header altındaki ayrım çizgisi */}
       {favorites.length > 0 && <View style={styles.headerSeparator} />}
 
       {favorites.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyMessage}>
-            Favori ürün yok{" "}
+          <View style={styles.emptyMessageContainer}>
+            <Text style={styles.emptyMessage}>Favori ürün yok </Text>
             <FontAwesome5 name="smile" size={24} color="black" />
-          </Text>
+          </View>
           <TouchableOpacity
             style={styles.continueShoppingButton}
             onPress={() => navigation.navigate("Home")}
@@ -157,12 +156,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 16,
   },
-  backButton: {},
   headerTitle: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#333",
-    paddingRight: 140,
+    paddingRight: 150,
   },
   removeAllButton: {
     backgroundColor: "#ea580c",
@@ -191,10 +189,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  emptyMessageContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   emptyMessage: {
     textAlign: "center",
     fontSize: 18,
     color: "#555",
+    marginRight: 8,
   },
   continueShoppingButton: {
     backgroundColor: "#FFA500",

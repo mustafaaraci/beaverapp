@@ -21,6 +21,7 @@ const ProductList = ({ products, selectedCategory, navigation }) => {
   const dispatch = useDispatch();
   const { favorites } = useSelector((state) => state.favorites); // Favori ürünleri al
 
+  // Seçili kategoride ürünleri filtrele
   const filteredProducts = selectedCategory
     ? products.filter((product) => product.category === selectedCategory)
     : products;
@@ -35,9 +36,12 @@ const ProductList = ({ products, selectedCategory, navigation }) => {
       text1: isFavorite
         ? "Ürün favorilerden çıkarıldı!"
         : "Ürün favorilere eklendi!",
+      text2: isFavorite
+        ? `${product.title}  favorilerden çıkarıldı!`
+        : `${product.title}  favorilere eklendi.`,
       type: "success",
       position: "top",
-      visibilityTime: 1000,
+      visibilityTime: 3000,
       autoHide: true,
     });
   };
@@ -86,7 +90,7 @@ const ProductList = ({ products, selectedCategory, navigation }) => {
       <FlatList
         data={filteredProducts}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()} // id'yi string'e çevir
+        keyExtractor={(item) => item.id.toString()}
         numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
         contentContainerStyle={styles.listContainer}

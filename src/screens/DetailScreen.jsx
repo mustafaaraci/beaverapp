@@ -1,29 +1,55 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
   Image,
   Text,
   TouchableOpacity,
-  Alert,
   ScrollView,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../redux/cartSlice";
+import Toast from "react-native-toast-message";
 
 const DetailScreen = ({ route }) => {
   const { product } = route.params;
   const navigation = useNavigation();
+  const dispatch = useDispatch();
 
-  const handleAddToCart = () => {
-    Alert.alert("Sepete Eklendi", `${product.title} sepete eklendi!`);
+  const [selectedSize, setSelectedSize] = useState(null);
+
+  const handleSizeSelect = (size) => {
+    setSelectedSize(size);
   };
 
-  const handleBuyNow = () => {
-    Alert.alert(
-      "Şimdi Al",
-      `${product.title} için ödeme sayfasına yönlendiriliyorsunuz!`
-    );
+  const handleAddToCart = () => {
+    if (!selectedSize) {
+      Toast.show({
+        text1: "Lütfen bir beden seçin!",
+        position: "top",
+        type: "error",
+        visibilityTime: 2000,
+        autoHide: true,
+      });
+      return;
+    }
+
+    const cartItem = { ...product, size: selectedSize };
+    dispatch(addToCart(cartItem));
+    Toast.show({
+      text1: "Ürününüz sepete eklendi.",
+      text2: `${product.title} (${selectedSize}) sepetinize eklendi.`,
+      position: "top",
+      type: "success",
+      visibilityTime: 2000,
+      autoHide: true,
+    });
+  };
+
+  const handleGoToCart = () => {
+    navigation.navigate("Cart"); // Sepet ekranına yönlendirme
   };
 
   return (
@@ -40,12 +66,18 @@ const DetailScreen = ({ route }) => {
           <Text style={styles.productTitle}>{product.title}</Text>
           <Text style={styles.productDescription}>{product.description}</Text>
 
-          {/* Beden Seçim Alanı */}
           <View style={styles.sizeSelectionContainer}>
             <Text style={styles.sizeSelectionTitle}>Beden Seçin:</Text>
             <View style={styles.sizeOptions}>
               {["XS", "S", "M", "L", "XL"].map((size) => (
-                <TouchableOpacity key={size} style={styles.sizeOption}>
+                <TouchableOpacity
+                  key={size}
+                  style={[
+                    styles.sizeOption,
+                    selectedSize === size && styles.selectedSizeOption,
+                  ]}
+                  onPress={() => handleSizeSelect(size)}
+                >
                   <Text style={styles.sizeOptionText}>{size}</Text>
                 </TouchableOpacity>
               ))}
@@ -54,7 +86,9 @@ const DetailScreen = ({ route }) => {
         </View>
       </ScrollView>
       <View style={styles.fixedFooter}>
-        <Text style={styles.productPrice}>${product.price.toFixed(2)}</Text>
+        <Text style={styles.productPrice}>
+          ${Number(product.price).toFixed(2)}
+        </Text>
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={styles.addToCartButton}
@@ -62,8 +96,11 @@ const DetailScreen = ({ route }) => {
           >
             <Text style={styles.buttonText}>Sepete Ekle</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.buyNowButton} onPress={handleBuyNow}>
-            <Text style={styles.buttonText}>Şimdi Al</Text>
+          <TouchableOpacity
+            style={styles.buyNowButton}
+            onPress={handleGoToCart}
+          >
+            <Text style={styles.buttonText}>Sepete Git</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -123,6 +160,11 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginBottom: 8,
   },
+  selectedSizeOption: {
+    backgroundColor: "#FFA500",
+    borderWidth: 2,
+    borderColor: "#333",
+  },
   sizeOptionText: {
     fontWeight: "bold",
     color: "#333",
@@ -151,7 +193,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buyNowButton: {
-    backgroundColor: "#28a745", // Yeşil renk
+    backgroundColor: "#28a745",
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
@@ -163,9 +205,9 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: "absolute",
-    top: 20, // Yukarıdan uzaklık
-    left: 10, // Soldan uzaklık
-    zIndex: 1, // Diğer bileşenlerin üstünde görünmesi için
+    top: 20,
+    left: 10,
+    zIndex: 1,
   },
 });
 

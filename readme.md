@@ -22,7 +22,7 @@ BeaverApp, kullanıcıların çeşitli ürünleri keşfettiği, kategorilere gö
 ## Kurulum
 
 - npm install
-  Bu komut, package.json dosyasındaki bağımlılıkları indirerek projenin çalışması için gerekli olan tüm kütüphaneleri yükleyecektir.
+- Bu komut, package.json dosyasındaki bağımlılıkları indirerek projenin çalışması için gerekli olan tüm kütüphaneleri yükleyecektir.
 
 - npm start
-  Expo Go uygulaması ile QR kodunu tarayarak projeyi mobil cihazınızda açabilirsiniz.
+- Expo Go uygulaması ile QR kodunu tarayarak projeyi mobil cihazınızda açabilirsiniz.
