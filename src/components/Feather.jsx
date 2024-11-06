@@ -1,12 +1,16 @@
 import React from "react";
-import { StyleSheet, TouchableOpacity, Text } from "react-native";
+import { StyleSheet, TouchableOpacity, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Entypo from "@expo/vector-icons/Entypo";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import { KeyboardAvoidingView, Platform } from "react-native";
+import { useSelector } from "react-redux";
+import { selectTotalQuantity } from "../redux/cartSlice";
 
 const Feather = ({ state, descriptors, navigation }) => {
+  // sepetteki benzersiz ürün sayısını al
+  const totalQuantity = useSelector(selectTotalQuantity);
+
   return (
     <LinearGradient colors={["#f8fafc", "#f1f5f9"]} style={styles.container}>
       {state.routes.map((route, index) => {
@@ -48,12 +52,12 @@ const Feather = ({ state, descriptors, navigation }) => {
                 <Entypo
                   name="home"
                   size={24}
-                  color={isFocused ? "#FFA500" : "#cbd5e1"}
+                  color={isFocused ? "#FFA500" : "#7D7D7D"}
                 />
                 <Text
                   style={[
                     styles.tabLabel,
-                    { color: isFocused ? "#FFA500" : "#cbd5e1" },
+                    { color: isFocused ? "#FFA500" : "#7D7D7D" },
                   ]}
                 >
                   Anasayfa
@@ -65,12 +69,12 @@ const Feather = ({ state, descriptors, navigation }) => {
                 <MaterialIcons
                   name="favorite"
                   size={25}
-                  color={isFocused ? "#FFA500" : "#cbd5e1"}
+                  color={isFocused ? "#FFA500" : "#7D7D7D"}
                 />
                 <Text
                   style={[
                     styles.tabLabel,
-                    { color: isFocused ? "#FFA500" : "#cbd5e1" },
+                    { color: isFocused ? "#FFA500" : "#7D7D7D" },
                   ]}
                 >
                   Favorilerim
@@ -82,12 +86,17 @@ const Feather = ({ state, descriptors, navigation }) => {
                 <Entypo
                   name="shopping-cart"
                   size={24}
-                  color={isFocused ? "#FFA500" : "#cbd5e1"}
+                  color={isFocused ? "#FFA500" : "#7D7D7D"}
                 />
+                {totalQuantity > 0 && (
+                  <View style={styles.notificationCircle}>
+                    <Text style={styles.notificationText}>{totalQuantity}</Text>
+                  </View>
+                )}
                 <Text
                   style={[
                     styles.tabLabel,
-                    { color: isFocused ? "#FFA500" : "#cbd5e1" },
+                    { color: isFocused ? "#FFA500" : "#7D7D7D" },
                   ]}
                 >
                   Sepetim
@@ -99,12 +108,12 @@ const Feather = ({ state, descriptors, navigation }) => {
                 <FontAwesome5
                   name="user-alt"
                   size={22}
-                  color={isFocused ? "#FFA500" : "#cbd5e1"}
+                  color={isFocused ? "#FFA500" : "#7D7D7D"}
                 />
                 <Text
                   style={[
                     styles.tabLabel,
-                    { color: isFocused ? "#FFA500" : "#cbd5e1" },
+                    { color: isFocused ? "#FFA500" : "#7D7D7D" },
                   ]}
                 >
                   Hesabım
@@ -117,8 +126,6 @@ const Feather = ({ state, descriptors, navigation }) => {
     </LinearGradient>
   );
 };
-
-export default Feather;
 
 const styles = StyleSheet.create({
   container: {
@@ -140,4 +147,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
+  notificationCircle: {
+    position: "absolute",
+    right: -1,
+    top: -5,
+    backgroundColor: "#FFA500",
+    borderRadius: 10,
+    width: 18,
+    height: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    borderColor: "#fff",
+    borderWidth: 1,
+  },
+  notificationText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 12,
+  },
 });
+
+export default Feather;

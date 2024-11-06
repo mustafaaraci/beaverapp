@@ -12,32 +12,37 @@ const cartSlice = createSlice({
         (item) =>
           item.id === action.payload.id && item.size === action.payload.size
       );
+
       if (existingItem) {
-        // Eğer ürün zaten sepetteyse miktarını arttır
-        if (existingItem.quantity < 5) {
-          existingItem.quantity += 1;
+        // Eğer ürün zaten sepetteyse, mevcut miktarı artır
+        if (existingItem.quantity + action.payload.quantity <= 5) {
+          existingItem.quantity += action.payload.quantity;
         } else {
           Toast.show({
             text1: "Maksimum miktara ulaşıldı!",
             text2: "Bu üründen en fazla 5 adet alabilirsiniz.",
             type: "error",
             position: "top",
-            visibilityTime: 3000,
+            visibilityTime: 2000,
             autoHide: true,
           });
         }
       } else {
         // Yeni bir ürün ekle
-        state.items.push({ ...action.payload, quantity: 1 });
+        state.items.push({
+          ...action.payload,
+          quantity: action.payload.quantity,
+        });
       }
     },
+    // Ürünü sepetten çıkar
     removeFromCart: (state, action) => {
       const index = state.items.findIndex(
         (item) =>
           item.id === action.payload.id && item.size === action.payload.size
       );
       if (index !== -1) {
-        state.items.splice(index, 1); // Ürünü sepetten çıkar
+        state.items.splice(index, 1);
       }
     },
     clearCart: (state) => {
@@ -50,13 +55,13 @@ const cartSlice = createSlice({
       );
       if (existingItem) {
         if (existingItem.quantity < 5) {
-          existingItem.quantity += 1; // Miktarı artır
+          existingItem.quantity += 1;
         } else {
           Toast.show({
             text1: "Bu üründen en fazla 5 adet alabilirsiniz.",
             type: "error",
             position: "top",
-            visibilityTime: 3000,
+            visibilityTime: 2000,
             autoHide: true,
           });
         }
@@ -70,8 +75,7 @@ const cartSlice = createSlice({
 
       if (existingItem) {
         if (existingItem.quantity > 1) {
-          existingItem.quantity -= 1; // Miktarı azalt
-        } else {
+          existingItem.quantity -= 1;
           Toast.show({
             text1: "Bu ürünün miktarı 1'den az olamaz.",
             type: "error",
@@ -84,6 +88,14 @@ const cartSlice = createSlice({
     },
   },
 });
+
+// sepet üzerinde benzersiz ürün sayısını döndür
+export const selectTotalQuantity = (state) => {
+  return state.cart.items.length;
+};
+
+// Sepetteki ürünleri seçmek için
+export const selectCartItems = (state) => state.cart.items;
 
 export const {
   addToCart,

@@ -41,7 +41,7 @@ const ProductList = ({ products, selectedCategory, navigation }) => {
         : `${product.title}  favorilere eklendi.`,
       type: "success",
       position: "top",
-      visibilityTime: 3000,
+      visibilityTime: 2000,
       autoHide: true,
     });
   };

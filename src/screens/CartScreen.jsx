@@ -22,21 +22,21 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 const CartScreen = ({ navigation }) => {
   const cartItems = useSelector((state) => state.cart.items);
+
   const dispatch = useDispatch();
   const refreshing = false;
-  // Ürünü sepetten çıkarma
+
   const handleRemoveItem = (item) => {
     dispatch(removeFromCart(item));
     Toast.show({
       text1: "Ürün sepetten çıkarıldı!",
       position: "top",
       type: "success",
-      visibilityTime: 1000,
+      visibilityTime: 2000,
       autoHide: true,
     });
   };
 
-  //sepete tümüyle silme
   const handleClearCart = () => {
     Alert.alert(
       "Sepeti Temizle",
@@ -51,7 +51,7 @@ const CartScreen = ({ navigation }) => {
               text1: "Sepetinizde bulunan ürünler çıkarıldı!",
               position: "top",
               type: "success",
-              visibilityTime: 1000,
+              visibilityTime: 2000,
               autoHide: true,
             });
           },
@@ -59,15 +59,15 @@ const CartScreen = ({ navigation }) => {
       ]
     );
   };
-  //sepette ürün artırma
+
   const handleIncreaseQuantity = (item) => {
     dispatch(increaseQuantity(item));
   };
-  //sepette ürün azaltma
+
   const handleDecreaseQuantity = (item) => {
     dispatch(decreaseQuantity(item));
   };
-  //sepetteki toplam ürünlerin fiyatı
+
   const calculateTotal = () => {
     return cartItems
       .reduce((total, item) => total + item.price * item.quantity, 0)
@@ -75,7 +75,6 @@ const CartScreen = ({ navigation }) => {
   };
 
   const renderItem = ({ item }) => {
-    //sepetteki belli bir ürünün toplam fiyatı
     const totalPrice = (item.price * item.quantity).toFixed(2);
 
     return (
@@ -90,9 +89,13 @@ const CartScreen = ({ navigation }) => {
             onPress={() => navigation.navigate("Detail", { product: item })}
           >
             <Text style={styles.productTitle}>
-              {item.title} ({item.size})
+              {item.title}
+              {item.size && ` (${item.size})`}
             </Text>
           </TouchableOpacity>
+          {item.size && (
+            <Text style={styles.sizeInfoText}>Beden Seçimi: {item.size}</Text>
+          )}
           <Text style={styles.productPrice}>
             ${item.price.toFixed(2)} x {item.quantity}
           </Text>
@@ -119,7 +122,7 @@ const CartScreen = ({ navigation }) => {
               onPress={() => handleRemoveItem(item)}
               style={styles.removeButton}
             >
-              <Text style={styles.removeButtonText}>Sepetten Çıkar</Text>
+              <MaterialIcons style={styles.removeButtonText} name="delete" />
             </TouchableOpacity>
           </View>
         </View>
@@ -128,6 +131,17 @@ const CartScreen = ({ navigation }) => {
   };
 
   const onRefresh = () => {};
+
+  const handleCheckout = () => {
+    // Sepeti al butonuna tıklanınca gösterilecek toast mesajı
+    Toast.show({
+      text1: "Şuan Kullanılamıyor!",
+      position: "top",
+      type: "info",
+      visibilityTime: 2000,
+      autoHide: true,
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -190,7 +204,10 @@ const CartScreen = ({ navigation }) => {
           <Text style={styles.totalText}>
             Toplam Sepet: ${calculateTotal()}
           </Text>
-          <TouchableOpacity style={styles.checkoutButton}>
+          <TouchableOpacity
+            style={styles.checkoutButton}
+            onPress={handleCheckout}
+          >
             <Text style={styles.buttonText}>Sepeti Al</Text>
           </TouchableOpacity>
         </View>
@@ -296,6 +313,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
   },
+  sizeInfoText: {
+    fontSize: 14,
+    color: "#333",
+    marginTop: 4,
+  },
   productPrice: {
     fontSize: 16,
     fontWeight: "bold",
@@ -333,13 +355,12 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
   },
   removeButtonText: {
-    color: "white",
+    color: "#7D7D7D",
     fontWeight: "bold",
-    backgroundColor: "#FFA500",
     padding: 8,
     borderRadius: 8,
     textAlign: "center",
-    fontSize: 12,
+    fontSize: 24,
   },
   totalContainer: {
     flexDirection: "row",

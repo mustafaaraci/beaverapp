@@ -30,7 +30,7 @@ const FavoritesScreen = ({ navigation }) => {
         text1: "Ürün favorilerden çıkarıldı!",
         position: "top",
         type: "success",
-        visibilityTime: 1000,
+        visibilityTime: 2000,
         autoHide: true,
       });
     };
@@ -66,8 +66,11 @@ const FavoritesScreen = ({ navigation }) => {
               </Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.addToCartButton}>
-            <Text style={styles.addToCartButtonText}>Sepete Ekle</Text>
+          <TouchableOpacity
+            style={styles.addToCartButton}
+            onPress={() => navigation.navigate("Detail", { product: item })}
+          >
+            <Text style={styles.addToCartButtonText}>Ürünü İncele</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -84,7 +87,7 @@ const FavoritesScreen = ({ navigation }) => {
       text1: "Tüm favori ürünler kaldırıldı!",
       position: "top",
       type: "success",
-      visibilityTime: 1000,
+      visibilityTime: 2000,
       autoHide: true,
     });
   };
