@@ -62,5 +62,6 @@ export const selectProductsByCategory = createSelector(
     return products.filter((product) => product.category === category);
   }
 );
+
 export const { setRefreshing } = productSlice.actions;
 export default productSlice.reducer;

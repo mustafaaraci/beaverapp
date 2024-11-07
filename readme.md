@@ -5,19 +5,21 @@ BeaverApp, kullanıcıların çeşitli ürünleri keşfettiği, kategorilere gö
 ## Özellikler
 
 - Ürün kategorileri ile filtreleme
-- Arama fonksiyonu (yapım aşamasında...)
+- Arama fonksiyonu
 - Favori ürünleri ekleme ve çıkarma
 - Ürün detay sayfası
-- Sepet sayfası(yapım aşamasında...)
+- Sepet sayfası
+- Sepete ekleme ve çıkarma
 - Responsive tasarım
 
 ## Teknolojiler
 
 - React Native
-- Redux
+- Redux Toolkit
 - React Navigation
 - Expo
 - Axios (API istekleri için)
+- Node Js
 
 ## Kurulum
 
