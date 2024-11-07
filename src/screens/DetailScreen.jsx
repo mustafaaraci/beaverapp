@@ -30,7 +30,17 @@ const DetailScreen = ({ route }) => {
   };
 
   const increaseQuantity = () => {
-    setQuantity((prev) => (prev < 5 ? prev + 1 : prev));
+    if (quantity < 5) {
+      setQuantity((prev) => prev + 1);
+    } else {
+      Toast.show({
+        text1: "Bu üründen en fazla 5 adet alabilirsiniz.",
+        type: "error",
+        position: "top",
+        visibilityTime: 2000,
+        autoHide: true,
+      });
+    }
   };
 
   const decreaseQuantity = () => {

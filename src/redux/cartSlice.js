@@ -76,13 +76,6 @@ const cartSlice = createSlice({
       if (existingItem) {
         if (existingItem.quantity > 1) {
           existingItem.quantity -= 1;
-          Toast.show({
-            text1: "Bu ürünün miktarı 1'den az olamaz.",
-            type: "error",
-            position: "top",
-            visibilityTime: 3000,
-            autoHide: true,
-          });
         }
       }
     },
