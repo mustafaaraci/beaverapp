@@ -13,7 +13,7 @@ router.post("/register", async (req, res) => {
     if (existingUser) {
       return res
         .status(400)
-        .json({ error: "Bu e-posta adresi zaten alınmış." });
+        .json({ error: "Bu e-posta adresi zaten alınmış!" });
     }
 
     // Şifreyi hashle

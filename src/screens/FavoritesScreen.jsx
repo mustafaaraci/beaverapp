@@ -19,7 +19,8 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 const FavoritesScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { favorites } = useSelector((state) => state.favorites);
-  const { refreshing } = useSelector((state) => state.products);
+  //sayfa yenilemek için
+  // const { refreshing } = useSelector((state) => state.products);
 
   const renderItem = ({ item }) => {
     const isFavorite = favorites.some((fav) => fav.id === item.id);
@@ -76,10 +77,10 @@ const FavoritesScreen = ({ navigation }) => {
       </TouchableOpacity>
     );
   };
-
-  const onRefresh = () => {
-    dispatch(refreshProducts());
-  };
+  //sayfa yenileme
+  // const onRefresh = () => {
+  //   dispatch(refreshProducts());
+  // };
 
   const handleRemoveAllFavorites = () => {
     dispatch(removeAllFavorites());
@@ -134,9 +135,10 @@ const FavoritesScreen = ({ navigation }) => {
           data={favorites}
           renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+          //sayfa yenileme
+          // refreshControl={
+          //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          // }
           contentContainerStyle={styles.flatListContent}
         />
       )}

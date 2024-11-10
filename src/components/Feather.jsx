@@ -8,8 +8,100 @@ import { useSelector } from "react-redux";
 import { selectTotalQuantity } from "../redux/cartSlice";
 
 const Feather = ({ state, descriptors, navigation }) => {
-  // sepetteki benzersiz ürün sayısını al
   const totalQuantity = useSelector(selectTotalQuantity);
+  const { currentUser } = useSelector((state) => state.users);
+
+  const handleProfilePress = () => {
+    // Kullanıcı giriş durumuna göre yönlendirme
+    navigation.navigate(currentUser ? "Profile" : "Login");
+  };
+
+  const renderTabIcon = (route, isFocused) => {
+    switch (route.name) {
+      case "Home":
+        return (
+          <>
+            <Entypo
+              name="home"
+              size={24}
+              color={isFocused ? "#FFA500" : "#7D7D7D"}
+            />
+            <Text
+              style={[
+                styles.tabLabel,
+                { color: isFocused ? "#FFA500" : "#7D7D7D" },
+              ]}
+            >
+              Anasayfa
+            </Text>
+          </>
+        );
+      case "Favorites":
+        return (
+          <>
+            <MaterialIcons
+              name="favorite"
+              size={24}
+              color={isFocused ? "#FFA500" : "#7D7D7D"}
+            />
+            <Text
+              style={[
+                styles.tabLabel,
+                { color: isFocused ? "#FFA500" : "#7D7D7D" },
+              ]}
+            >
+              Favorilerim
+            </Text>
+          </>
+        );
+      case "Cart":
+        return (
+          <>
+            <Entypo
+              name="shopping-cart"
+              size={24}
+              color={isFocused ? "#FFA500" : "#7D7D7D"}
+            />
+            {totalQuantity > 0 && (
+              <View style={styles.notificationCircle}>
+                <Text style={styles.notificationText}>{totalQuantity}</Text>
+              </View>
+            )}
+            <Text
+              style={[
+                styles.tabLabel,
+                { color: isFocused ? "#FFA500" : "#7D7D7D" },
+              ]}
+            >
+              Sepetim
+            </Text>
+          </>
+        );
+      case "Profile":
+        return (
+          <View style={styles.profileContainer}>
+            <FontAwesome5
+              name={currentUser ? "user-alt" : "user-alt"}
+              size={22}
+              color={isFocused ? "#FFA500" : "#7D7D7D"}
+            />
+            <Text
+              style={[
+                styles.tabLabel,
+                { color: isFocused ? "#FFA500" : "#7D7D7D" },
+              ]}
+            >
+              {/* {currentUser?.name && currentUser?.surname
+                ? `${currentUser.name} ${currentUser.surname}`
+                : "Giriş Yap"} */}
+              {currentUser ? "Hesabım" : "Giriş Yap"}
+            </Text>
+          </View>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <LinearGradient colors={["#f8fafc", "#f1f5f9"]} style={styles.container}>
@@ -29,13 +121,6 @@ const Feather = ({ state, descriptors, navigation }) => {
           }
         };
 
-        const onLongPress = () => {
-          navigation.emit({
-            type: "tabLongPress",
-            target: route.key,
-          });
-        };
-
         return (
           <TouchableOpacity
             key={index}
@@ -43,83 +128,10 @@ const Feather = ({ state, descriptors, navigation }) => {
             accessibilityState={isFocused ? { selected: true } : {}}
             accessibilityLabel={options.tabBarAccessibilityLabel}
             testID={options.tabBarTestID}
-            onPress={onPress}
-            onLongPress={onLongPress}
+            onPress={route.name === "Profile" ? handleProfilePress : onPress}
             style={styles.tabItem}
           >
-            {route.name === "Home" && (
-              <>
-                <Entypo
-                  name="home"
-                  size={24}
-                  color={isFocused ? "#FFA500" : "#7D7D7D"}
-                />
-                <Text
-                  style={[
-                    styles.tabLabel,
-                    { color: isFocused ? "#FFA500" : "#7D7D7D" },
-                  ]}
-                >
-                  Anasayfa
-                </Text>
-              </>
-            )}
-            {route.name === "Favorites" && (
-              <>
-                <MaterialIcons
-                  name="favorite"
-                  size={25}
-                  color={isFocused ? "#FFA500" : "#7D7D7D"}
-                />
-                <Text
-                  style={[
-                    styles.tabLabel,
-                    { color: isFocused ? "#FFA500" : "#7D7D7D" },
-                  ]}
-                >
-                  Favorilerim
-                </Text>
-              </>
-            )}
-            {route.name === "Cart" && (
-              <>
-                <Entypo
-                  name="shopping-cart"
-                  size={24}
-                  color={isFocused ? "#FFA500" : "#7D7D7D"}
-                />
-                {totalQuantity > 0 && (
-                  <View style={styles.notificationCircle}>
-                    <Text style={styles.notificationText}>{totalQuantity}</Text>
-                  </View>
-                )}
-                <Text
-                  style={[
-                    styles.tabLabel,
-                    { color: isFocused ? "#FFA500" : "#7D7D7D" },
-                  ]}
-                >
-                  Sepetim
-                </Text>
-              </>
-            )}
-            {route.name === "Profile" && (
-              <>
-                <FontAwesome5
-                  name="user-alt"
-                  size={22}
-                  color={isFocused ? "#FFA500" : "#7D7D7D"}
-                />
-                <Text
-                  style={[
-                    styles.tabLabel,
-                    { color: isFocused ? "#FFA500" : "#7D7D7D" },
-                  ]}
-                >
-                  Hesabım
-                </Text>
-              </>
-            )}
+            {renderTabIcon(route, isFocused)}
           </TouchableOpacity>
         );
       })}
@@ -164,6 +176,9 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 12,
+  },
+  profileContainer: {
+    alignItems: "center",
   },
 });
 

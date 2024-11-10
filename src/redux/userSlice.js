@@ -7,7 +7,7 @@ export const registerUser = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/users/register",
+        "http://192.168.1.10:5000/api/users/register",
         userData
       );
       return response.data;
@@ -26,7 +26,7 @@ export const loginUser = createAsyncThunk(
   async (userData, { dispatch, rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/users/login",
+        "http://192.168.1.10:5000/api/users/login",
         userData
       );
       dispatch(setUser(response.data));
@@ -40,11 +40,20 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+// Kullanıcı çıkışı için thunk
+export const logoutUser = createAsyncThunk(
+  "user/logout",
+  async (payload, { dispatch }) => {
+    // Burada gerekli çıkış işlemleri yapılabilir (örneğin, API çağrısı).
+    dispatch(clearUser()); // Kullanıcıyı temizle
+  }
+);
+
 // userSlice oluşturma
 export const userSlice = createSlice({
   name: "users",
   initialState: {
-    currentUser: {},
+    currentUser: null,
     loading: false,
     error: null,
   },
@@ -76,11 +85,14 @@ export const userSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentUser = action.payload;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        // Oturum kapatıldığında yapılacak işlemler
+        state.currentUser = null; // Kullanıcıyı temizle
       });
   },
 });

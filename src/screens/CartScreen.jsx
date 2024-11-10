@@ -22,9 +22,11 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 const CartScreen = ({ navigation }) => {
   const cartItems = useSelector((state) => state.cart.items);
+  const { currentUser } = useSelector((state) => state.users);
 
   const dispatch = useDispatch();
-  const refreshing = false;
+  //sayfa yenilemek için
+  // const refreshing = false;
 
   const handleRemoveItem = (item) => {
     dispatch(removeFromCart(item));
@@ -36,28 +38,16 @@ const CartScreen = ({ navigation }) => {
       autoHide: true,
     });
   };
-
+  //sepeti temizleme fonksiyonu
   const handleClearCart = () => {
-    Alert.alert(
-      "Sepeti Temizle",
-      "Sepeti temizlemek istediğinizden emin misiniz?",
-      [
-        { text: "Hayır", style: "cancel" },
-        {
-          text: "Evet",
-          onPress: () => {
-            dispatch(clearCart());
-            Toast.show({
-              text1: "Sepetinizde bulunan ürünler çıkarıldı!",
-              position: "top",
-              type: "success",
-              visibilityTime: 2000,
-              autoHide: true,
-            });
-          },
-        },
-      ]
-    );
+    dispatch(clearCart());
+    Toast.show({
+      text1: "Sepetinizde bulunan ürünler çıkarıldı!",
+      position: "top",
+      type: "success",
+      visibilityTime: 2000,
+      autoHide: true,
+    });
   };
 
   const handleIncreaseQuantity = (item) => {
@@ -129,18 +119,17 @@ const CartScreen = ({ navigation }) => {
       </View>
     );
   };
-
-  const onRefresh = () => {};
+  //sayfa yenileme
+  // const onRefresh = () => {};
 
   const handleCheckout = () => {
-    // Sepeti al butonuna tıklanınca gösterilecek toast mesajı
-    Toast.show({
-      text1: "Şuan Kullanılamıyor!",
-      position: "top",
-      type: "info",
-      visibilityTime: 2000,
-      autoHide: true,
-    });
+    if (!currentUser) {
+      // Giriş yapılmamışsa giriş sayfasına yönlendir
+      navigation.navigate("Login");
+    } else {
+      // Kullanıcı giriş yapmışsa ödeme sayfasına yönlendir
+      navigation.navigate("Payment");
+    }
   };
 
   return (
@@ -192,9 +181,10 @@ const CartScreen = ({ navigation }) => {
           data={cartItems}
           renderItem={renderItem}
           keyExtractor={(item) => item.id + item.size}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+          //sayfa yenileme
+          // refreshControl={
+          //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          // }
           contentContainerStyle={styles.flatListContent}
         />
       )}

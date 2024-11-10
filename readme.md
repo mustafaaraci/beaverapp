@@ -10,6 +10,7 @@ BeaverApp, kullanıcıların çeşitli ürünleri keşfettiği, kategorilere gö
 - Ürün detay sayfası
 - Sepet sayfası
 - Sepete ekleme ve çıkarma
+- Login ve register işlemleri
 - Responsive tasarım
 
 ## Teknolojiler

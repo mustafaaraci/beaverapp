@@ -1,141 +1,244 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
   View,
   TextInput,
   TouchableOpacity,
-  Alert,
+  Modal,
+  ActivityIndicator,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
-import { registerUser, clearError } from "../redux/userSlice";
+import { registerUser } from "../redux/userSlice";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { Formik } from "formik";
+import * as Yup from "yup";
+import AntDesign from "@expo/vector-icons/AntDesign";
 
 const Register = () => {
-  const [username, setUsername] = useState("");
-  const [lastname, setLastname] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
   const navigation = useNavigation();
-  const { loading, error } = useSelector((state) => state.users);
   const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.users);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("");
 
-  // Hata yönetimi
-  useEffect(() => {
-    if (error) {
-      Alert.alert("Kayıt Hatası", error);
-      dispatch(clearError()); // Hata mesajını temizlemek için
-    }
-  }, [error, dispatch]);
+  const validationSchema = Yup.object().shape({
+    name: Yup.string().required("Ad gereklidir"),
+    surname: Yup.string().required("Soyadı gereklidir"),
+    email: Yup.string()
+      .email("Geçersiz e-posta formatı")
+      .required("E-posta gereklidir"),
+    password: Yup.string()
+      .required("Şifre gereklidir")
+      .min(6, "Şifre en az 6 karakter olmalıdır"),
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref("password"), null], "Şifreler eşleşmiyor")
+      .required("Şifreyi onaylamak zorunludur"),
+  });
 
-  const handleRegister = () => {
-    if (username && lastname && email && password && confirmPassword) {
-      if (password === confirmPassword) {
-        // E-posta formatını kontrol et
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-          Alert.alert("Hata", "Geçersiz e-posta formatı.");
-          return;
-        }
+  const handleRegister = (values, { resetForm }) => {
+    const userData = {
+      // name: values.name,
+      // surname: values.surname,
+      name: values.name.charAt(0).toUpperCase() + values.name.slice(1),
+      surname: values.surname.charAt(0).toUpperCase() + values.surname.slice(1),
+      email: values.email,
+      password: values.password,
+    };
 
-        // userData nesnesini oluştur
-        const userData = {
-          username, // kullanıcı adı
-          lastname, // soyadı
-          email, // e-posta
-          password, // şifre
-        };
+    dispatch(registerUser(userData))
+      .unwrap()
+      .then(() => {
+        setModalMessage(
+          `Kayıt işleminiz başarıyla oluşturulmuştur. ${userData.name} ${userData.surname}`
+        );
+        setModalType("success");
+        setModalVisible(true);
+        resetForm();
 
-        dispatch(registerUser(userData)) // userData'yı gönder
-          .unwrap()
-          .then(() => {
-            Alert.alert(
-              "Kayıt Başarılı",
-              `Hoş geldiniz, ${username} ${lastname}!`
-            );
-            navigation.navigate("Login"); // Kayıttan sonra giriş ekranına yönlendir
-          })
-          .catch((err) => {
-            Alert.alert("Kayıt Hatası", err || "Bir hata oluştu."); // Hata mesajı göster
-          })
-          .finally(() => {
-            // Formu temizle
-            setUsername("");
-            setLastname("");
-            setEmail("");
-            setPassword("");
-            setConfirmPassword("");
-          });
-      } else {
-        Alert.alert("Hata", "Şifreler eşleşmiyor.");
-      }
-    } else {
-      Alert.alert("Hata", "Tüm alanları doldurun.");
-    }
+        setTimeout(() => {
+          navigation.navigate("Login");
+        }, 1500);
+      })
+      .catch((err) => {
+        setModalMessage((err = error || "Bir hata oluştu!"));
+        setModalType("error");
+        setModalVisible(true);
+
+        setTimeout(() => {
+          setModalVisible(false);
+        }, 1500);
+      });
   };
 
   return (
-    <LinearGradient colors={["#f8fafc", "#f1f5f9"]} style={styles.container}>
-      <Text style={styles.title}>Kayıt Ol</Text>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Kullanıcı Adı"
-          value={username}
-          onChangeText={setUsername}
-          placeholderTextColor="#ccc"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Kullanıcı Soyadı"
-          value={lastname}
-          onChangeText={setLastname}
-          placeholderTextColor="#ccc"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="E-posta"
-          value={email}
-          onChangeText={setEmail}
-          placeholderTextColor="#ccc"
-          keyboardType="email-address"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Şifre"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          placeholderTextColor="#ccc"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Şifreyi Onayla"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
-          placeholderTextColor="#ccc"
-        />
-      </View>
+    <View style={styles.container}>
       <TouchableOpacity
-        style={styles.button}
-        onPress={handleRegister}
-        disabled={loading}
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
       >
-        <Text style={styles.buttonText}>
-          {loading ? "Yükleniyor..." : "Kaydol"}
-        </Text>
+        <Ionicons
+          style={styles.backText}
+          name="chevron-back"
+          size={24}
+          color="#475569"
+        />
       </TouchableOpacity>
-      <View style={styles.loginPromptContainer}>
-        <Text style={styles.loginPrompt}>Zaten bir hesabınız var mı?</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-          <Text style={styles.loginText}> Giriş Yap</Text>
-        </TouchableOpacity>
-      </View>
-    </LinearGradient>
+
+      <Text style={styles.title}>Kayıt Ol</Text>
+      <Formik
+        initialValues={{
+          name: "",
+          surname: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        }}
+        validationSchema={validationSchema}
+        onSubmit={handleRegister}
+      >
+        {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Ad"
+              value={values.name}
+              onChangeText={handleChange("name")}
+              onBlur={handleBlur("name")}
+              placeholderTextColor="#ccc"
+              selectionColor="#FFA500"
+            />
+            {errors.name && <Text style={styles.error}>{errors.name}</Text>}
+
+            <TextInput
+              style={styles.input}
+              placeholder="Soyadı"
+              value={values.surname}
+              onChangeText={handleChange("surname")}
+              onBlur={handleBlur("surname")}
+              placeholderTextColor="#ccc"
+              selectionColor="#FFA500"
+            />
+            {errors.surname && (
+              <Text style={styles.error}>{errors.surname}</Text>
+            )}
+
+            <TextInput
+              style={styles.input}
+              placeholder="E-posta"
+              value={values.email}
+              onChangeText={handleChange("email")}
+              onBlur={handleBlur("email")}
+              placeholderTextColor="#ccc"
+              keyboardType="email-address"
+              selectionColor="#FFA500"
+            />
+            {errors.email && <Text style={styles.error}>{errors.email}</Text>}
+
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Şifre"
+                value={values.password}
+                onChangeText={handleChange("password")}
+                onBlur={handleBlur("password")}
+                secureTextEntry={!showPassword}
+                placeholderTextColor="#ccc"
+                selectionColor="#FFA500"
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeIcon}
+              >
+                <AntDesign
+                  name={showPassword ? "eye" : "eyeo"}
+                  size={24}
+                  color="#475569"
+                />
+              </TouchableOpacity>
+            </View>
+            {errors.password && (
+              <Text style={styles.error}>{errors.password}</Text>
+            )}
+
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Şifreyi Onayla"
+                value={values.confirmPassword}
+                onChangeText={handleChange("confirmPassword")}
+                onBlur={handleBlur("confirmPassword")}
+                secureTextEntry={!showConfirmPassword}
+                placeholderTextColor="#ccc"
+                selectionColor="#FFA500"
+              />
+              <TouchableOpacity
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                style={styles.eyeIcon}
+              >
+                <AntDesign
+                  name={showConfirmPassword ? "eye" : "eyeo"}
+                  size={24}
+                  color="#475569"
+                />
+              </TouchableOpacity>
+            </View>
+            {errors.confirmPassword && (
+              <Text style={styles.error}>{errors.confirmPassword}</Text>
+            )}
+
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Kayıt Ol</Text>
+              )}
+            </TouchableOpacity>
+            <View style={styles.loginPromptContainer}>
+              <Text style={styles.loginPrompt}>
+                Zaten bir hesabınız var mı?
+              </Text>
+              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                <Text style={styles.loginText}> Giriş Yap</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      </Formik>
+
+      <Modal
+        transparent={true}
+        animationType="fade"
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            {modalType === "success" ? (
+              <View style={styles.successModalContent}>
+                <Ionicons name="checkmark-circle" size={70} color="green" />
+                <Text style={styles.successTitle}>Başarılı!</Text>
+                <Text style={styles.modalMessage}>{modalMessage}</Text>
+              </View>
+            ) : (
+              <View style={styles.errorModalContent}>
+                <Ionicons name="close-circle" size={70} color="red" />
+                <Text style={styles.errorTitle}>Kayıt işlemi hatalı!</Text>
+                <Text style={styles.modalMessage}>{error}</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 };
 
@@ -147,6 +250,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
+    backgroundColor: "#fff",
+  },
+  backButton: {
+    position: "absolute",
+    top: 40,
+    left: 10,
+    zIndex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 25,
+    padding: 6,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  backText: {
+    marginRight: 3,
   },
   title: {
     fontSize: 24,
@@ -167,12 +291,21 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: "#fff",
   },
+  passwordContainer: {
+    position: "relative",
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 15,
+    top: 13,
+  },
   button: {
     backgroundColor: "#FFA500",
     borderRadius: 30,
     paddingVertical: 15,
-    width: "100%",
+    width: "50%",
     alignItems: "center",
+    alignSelf: "center",
   },
   buttonText: {
     color: "white",
@@ -181,6 +314,7 @@ const styles = StyleSheet.create({
   },
   loginPromptContainer: {
     flexDirection: "row",
+    justifyContent: "center",
     marginTop: 10,
     alignItems: "center",
   },
@@ -192,5 +326,50 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 18,
     color: "#FFA500",
+  },
+  error: {
+    color: "red",
+    marginBottom: 10,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    width: "80%",
+    padding: 20,
+    backgroundColor: "white",
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  successModalContent: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  successTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "green",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  errorTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  errorModalContent: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalMessage: {
+    marginBottom: 10,
+    textAlign: "center",
+    fontSize: 16,
+    color: "#333",
   },
 });

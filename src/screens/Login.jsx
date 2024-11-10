@@ -1,99 +1,202 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
   View,
   TextInput,
   TouchableOpacity,
-  Alert,
+  ActivityIndicator,
+  Modal,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser, clearError } from "../redux/userSlice"; // loginUser thunk'ını içe aktar
+import { loginUser } from "../redux/userSlice";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { Formik } from "formik";
+import * as Yup from "yup";
+import AntDesign from "@expo/vector-icons/AntDesign";
 
 const Login = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  const { loading, error, currentUser } = useSelector((state) => state.users);
+  const [showPassword, setShowPassword] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(error);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { loading, error } = useSelector((state) => state.users); // Kullanıcı durumunu al
+  const validationSchema = Yup.object().shape({
+    email: Yup.string()
+      .email("Geçersiz e-posta adresi")
+      .required("E-posta gereklidir"),
+    password: Yup.string()
+      .required("Şifre gereklidir")
+      .min(6, "Şifre en az 6 karakter olmalıdır"),
+  });
 
-  // Hata yönetimi
-  useEffect(() => {
-    if (error) {
-      Alert.alert("Giriş Hatası", error);
-      dispatch(clearError()); // Hata mesajını temizlemek için
-    }
-  }, [error, dispatch]);
-
-  const handleLogin = () => {
-    if (email && password) {
-      // userData nesnesini oluştur
-      const userData = {
-        email,
-        password,
-      };
-
-      dispatch(loginUser(userData)) // userData'yı gönder
-        .unwrap()
-        .then((data) => {
-          Alert.alert(
-            "Giriş Başarılı",
-            `Hoş geldiniz, ${data.username || email}!`
-          );
-          // Başarılı giriş sonrası yönlendirme
-          navigation.navigate("Home"); // Ana sayfanıza yönlendirin
-        })
-        .catch((err) => {
-          Alert.alert("Giriş Hatası", err); // Hata mesajı göster
-        });
-    } else {
-      Alert.alert("Hata", "Kullanıcı adı ve şifre gereklidir.");
-    }
+  const handleLogin = (values, { resetForm }) => {
+    const userData = { email: values.email, password: values.password };
+    dispatch(loginUser(userData))
+      .unwrap()
+      .then(() => {
+        setModalVisible(true);
+        resetForm();
+        setTimeout(() => {
+          setModalVisible(false);
+          navigation.navigate("Home");
+        }, 1500);
+      })
+      .catch((err) => {
+        setErrorMessage(err);
+        setErrorModalVisible(true);
+        setTimeout(() => {
+          setErrorModalVisible(false);
+        }, 1500);
+      });
   };
 
   return (
-    <LinearGradient colors={["#f8fafc", "#f1f5f9"]} style={styles.container}>
+    <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => {
+          navigation.navigate("Home");
+        }}
+      >
+        <Ionicons
+          style={styles.backText}
+          name="chevron-back"
+          size={24}
+          color="#475569"
+        />
+      </TouchableOpacity>
+
       <Text style={styles.title}>Giriş Yap</Text>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="E-posta"
-          value={email}
-          onChangeText={setEmail}
-          placeholderTextColor="#ccc"
-          keyboardType="email-address"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Şifre"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          placeholderTextColor="#ccc"
-        />
-      </View>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleLogin}
-        disabled={loading}
+      <Formik
+        initialValues={{ email: "", password: "" }}
+        validationSchema={validationSchema}
+        onSubmit={handleLogin}
       >
-        <Text style={styles.buttonText}>
-          {loading ? "Yükleniyor..." : "Giriş Yap"}
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity>
-        <Text style={styles.forgotPassword}>Şifremi Unuttum?</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.registerButton}
-        onPress={() => navigation.navigate("Register")}
+        {({
+          handleChange,
+          handleBlur,
+          handleSubmit,
+          values,
+          errors,
+          resetForm,
+        }) => (
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="E-posta"
+              value={values.email}
+              onChangeText={handleChange("email")}
+              onBlur={handleBlur("email")}
+              placeholderTextColor="#ccc"
+              keyboardType="email-address"
+              selectionColor="#FFA500"
+            />
+            {errors.email && <Text style={styles.error}>{errors.email}</Text>}
+
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Şifre"
+                value={values.password}
+                onChangeText={handleChange("password")}
+                onBlur={handleBlur("password")}
+                secureTextEntry={!showPassword}
+                placeholderTextColor="#ccc"
+                selectionColor="#FFA500"
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeIcon}
+              >
+                <AntDesign
+                  name={showPassword ? "eye" : "eyeo"}
+                  size={24}
+                  color="#475569"
+                />
+              </TouchableOpacity>
+            </View>
+            {errors.password && (
+              <Text style={styles.error}>{errors.password}</Text>
+            )}
+
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Giriş Yap</Text>
+              )}
+            </TouchableOpacity>
+
+            <View style={styles.linkContainer}>
+              <TouchableOpacity>
+                <Text style={styles.forgotPassword}>Şifremi Unuttum?</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.registerButton}
+                onPress={() => {
+                  setErrorMessage("");
+                  resetForm();
+                  navigation.navigate("Register");
+                }}
+              >
+                <Text style={styles.registerText}>Kayıt Ol</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      </Formik>
+
+      {/* Başarı Modal Bileşeni */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
       >
-        <Text style={styles.registerText}>Kayıt Ol</Text>
-      </TouchableOpacity>
-    </LinearGradient>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.successModalContent}>
+              <Ionicons name="checkmark-circle" size={70} color="green" />
+              <Text style={styles.modalTitle}>Giriş Başarılı</Text>
+              <Text style={styles.modalMessage}>
+                Hoş geldiniz, {currentUser?.name} {currentUser?.surname}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Hata Modal Bileşeni */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={errorModalVisible}
+        onRequestClose={() => {
+          setErrorModalVisible(false);
+          setErrorMessage("");
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.errorModalContent}>
+              <Ionicons name="close-circle" size={70} color="red" />
+              <Text style={styles.modalTitle}>Giriş Hatası!</Text>
+              <Text style={styles.modalMessage}>{errorMessage}</Text>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 };
 
@@ -105,6 +208,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
+    backgroundColor: "#fff",
+  },
+  backButton: {
+    position: "absolute",
+    top: 40,
+    left: 10,
+    zIndex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 25,
+    padding: 6,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  backText: {
+    marginRight: 3,
   },
   title: {
     fontSize: 24,
@@ -125,31 +249,81 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: "#fff",
   },
+  passwordContainer: {
+    position: "relative",
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 15,
+    top: 13,
+  },
   button: {
     backgroundColor: "#FFA500",
     borderRadius: 30,
     paddingVertical: 15,
-    width: "100%",
+    width: "50%",
     alignItems: "center",
+    alignSelf: "center",
   },
   buttonText: {
     color: "white",
     fontWeight: "bold",
     fontSize: 16,
   },
-  forgotPassword: {
+  linkContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 10,
+    gap: 5,
+  },
+  forgotPassword: {
     color: "#FFA500",
     fontWeight: "bold",
+    textAlign: "center",
   },
   registerButton: {
-    width: "100%",
     alignItems: "center",
-    marginTop: 20,
   },
   registerText: {
     color: "#FFA500",
     fontWeight: "bold",
+    textAlign: "center",
     fontSize: 18,
+  },
+  error: {
+    color: "red",
+    marginBottom: 10,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 20,
+    alignItems: "center",
+  },
+  successModalContent: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  errorModalContent: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalMessage: {
+    fontSize: 16,
+    textAlign: "center",
+    marginBottom: 20,
   },
 });
