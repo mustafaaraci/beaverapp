@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   StyleSheet,
   View,
@@ -32,10 +32,25 @@ const products = [
 ];
 
 const { width } = Dimensions.get("window");
-const ITEM_WIDTH = width * 0.8;
+const ITEM_WIDTH = width * 0.98;
 
 const ProductSlider = () => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const flatListRef = useRef(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveIndex((prevIndex) => (prevIndex + 1) % products.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToIndex({ index: activeIndex, animated: true });
+    }
+  }, [activeIndex]);
 
   const renderItem = ({ item }) => (
     <TouchableOpacity style={styles.card}>
@@ -43,9 +58,15 @@ const ProductSlider = () => {
     </TouchableOpacity>
   );
 
+  const handleScrollEnd = (event) => {
+    const index = Math.floor(event.nativeEvent.contentOffset.x / ITEM_WIDTH);
+    setActiveIndex(index);
+  };
+
   return (
     <View style={styles.container}>
       <FlatList
+        ref={flatListRef}
         data={products}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
@@ -53,14 +74,10 @@ const ProductSlider = () => {
         showsHorizontalScrollIndicator={false}
         pagingEnabled
         snapToAlignment="center"
-        onMomentumScrollEnd={(event) => {
-          const index = Math.floor(
-            event.nativeEvent.contentOffset.x / ITEM_WIDTH
-          );
-          setActiveIndex(index);
-        }}
-        contentContainerStyle={styles.listContainer}
+        onMomentumScrollEnd={handleScrollEnd}
         decelerationRate="fast"
+        initialScrollIndex={0}
+        contentContainerStyle={{ alignItems: "center" }}
       />
       <View style={styles.dotContainer}>
         {products.map((_, index) => (
@@ -83,27 +100,28 @@ export default ProductSlider;
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 0,
-    height: 164,
-    marginVertical: -5,
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
-  },
-  listContainer: {
-    paddingHorizontal: 5,
+    marginBottom: 10,
+    marginTop: -10,
   },
   card: {
-    width: 382,
+    width: ITEM_WIDTH,
     height: 140,
     borderRadius: 10,
     backgroundColor: "white",
-    marginHorizontal: 6,
+    marginHorizontal: 10 * 0.98,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
     alignItems: "center",
-    justifyContent: "flex-start",
+    justifyContent: "center",
+    marginRight: 10 * 0.98,
+    marginLeft: 9.1 * 0.98,
+    marginTop: 8,
   },
   image: {
     width: "100%",
@@ -115,13 +133,12 @@ const styles = StyleSheet.create({
   dotContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 0,
-    marginBottom: 16,
+    marginTop: 4,
   },
   dot: {
-    width: 3,
-    height: 3,
-    borderRadius: 5,
+    width: 4,
+    height: 4,
+    borderRadius: 3,
     marginHorizontal: 2,
   },
 });

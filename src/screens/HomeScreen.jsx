@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   StyleSheet,
   View,
@@ -34,11 +34,10 @@ const HomeScreen = () => {
   );
 
   useEffect(() => {
-    // Yükleme durumu
+    setLoading(true);
     dispatch(fetchProducts()).then(() => setLoading(false));
-  }, [dispatch, selectedCategory]);
+  }, [dispatch]);
 
-  // Refresh
   const onRefresh = () => {
     setRefreshing(true);
     setSelectedCategory(null);
@@ -47,12 +46,12 @@ const HomeScreen = () => {
     });
   };
 
-  // Ürünleri arama terimine göre filtrele
-  const filteredProducts = products.filter((product) =>
-    product.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) =>
+      product.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [products, searchTerm]);
 
-  // Arama butonuna tıklandığında filtrelenmiş ürünleri göster
   const handleSearch = () => {
     if (searchTerm) {
       console.log("Arama Yapılıyor:", searchTerm);
@@ -61,9 +60,9 @@ const HomeScreen = () => {
     }
   };
 
-  // Geri butonuna basıldığında arama terimini sıfırla
   const handleBack = () => {
     setSearchTerm("");
+    setSelectedCategory(null); // Kategoriyi sıfırla
   };
 
   return (
@@ -81,7 +80,7 @@ const HomeScreen = () => {
             placeholderTextColor="#cbd5e1"
             selectionColor="#FFA500"
             value={searchTerm}
-            onChangeText={setSearchTerm} // Arama terimini güncelle
+            onChangeText={setSearchTerm}
           />
           <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
             <Ionicons name="search" size={24} color="#FFA500" />
@@ -97,7 +96,6 @@ const HomeScreen = () => {
         </View>
       </View>
 
-      {/* Kategoriler bileşeni, yalnızca arama yapılmadığında görünür */}
       {!searchTerm && (
         <View style={styles.categoriesWrapper}>
           <CategoryList
@@ -107,7 +105,6 @@ const HomeScreen = () => {
         </View>
       )}
 
-      {/* FlatList ile ürünleri listele */}
       {loading ? (
         <ActivityIndicator
           size="large"
@@ -118,10 +115,10 @@ const HomeScreen = () => {
         <FlatList
           style={styles.scrollContainer}
           data={filteredProducts}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item.id.toString()} // Benzersiz anahtar
           renderItem={({ item }) => (
             <ProductList
-              products={[item]} // Her ürün için tek bir öğe gönderiyoruz
+              products={[item]}
               selectedCategory={selectedCategory}
               navigation={navigation}
             />
@@ -134,6 +131,7 @@ const HomeScreen = () => {
           ListHeaderComponent={
             !searchTerm && (
               <View style={styles.sliderContainer}>
+                {/* slider */}
                 <ProductSlider />
               </View>
             )
@@ -206,8 +204,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   listContainer: {
-    paddingBottom: 64, // Tab bar ile arada boşluk oluşturmak için
-    paddingTop: 10, // Kategorilerden aşağıda başlaması için boşluk
+    paddingBottom: 64,
+    paddingTop: 10,
   },
   sliderContainer: {
     margin: -5,
