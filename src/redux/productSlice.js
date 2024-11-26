@@ -4,7 +4,7 @@ import {
   createSelector,
 } from "@reduxjs/toolkit";
 import axios from "axios";
-
+//ürünler
 export const fetchProducts = createAsyncThunk(
   "products/fetchProducts",
   async () => {

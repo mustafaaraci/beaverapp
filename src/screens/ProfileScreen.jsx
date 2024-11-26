@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
+  ActivityIndicator,
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
@@ -23,6 +24,7 @@ const ProfileScreen = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Eğer kullanıcı yoksa hiçbir şey gösterme
   if (!currentUser) {
@@ -31,11 +33,13 @@ const ProfileScreen = () => {
 
   // Çıkış işlemi
   const handleLogout = () => {
+    setLoading(true);
     setLogoutModalVisible(true);
     setTimeout(() => {
       setLogoutModalVisible(false);
       navigation.navigate("Home");
       dispatch(logoutUser());
+      setLoading(false);
     }, 1500);
   };
 
@@ -75,17 +79,26 @@ const ProfileScreen = () => {
       </View>
 
       {/* card kısmı */}
-      <TouchableOpacity style={styles.card}>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => navigation.navigate("ContactInfo")}
+      >
         <Ionicons name="call" size={24} color="#FFA500" />
         <Text style={styles.cardText}>İletişim Bilgilerim</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.card}>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => navigation.navigate("Address")}
+      >
         <Ionicons name="location-outline" size={24} color="#FFA500" />
         <Text style={styles.cardText}>Adres Bilgilerim</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.card}>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => navigation.navigate("MyOrders")}
+      >
         <Ionicons name="cart" size={24} color="#FFA500" />
         <Text style={styles.cardText}>Siparişlerim</Text>
       </TouchableOpacity>
@@ -100,11 +113,18 @@ const ProfileScreen = () => {
         <Text style={styles.cardText}>Ödeme Yöntemlerim</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
+      <TouchableOpacity
+        style={styles.logoutButton}
+        onPress={handleLogout}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
+        )}
       </TouchableOpacity>
 
-      {/* Çıkış Modal Bileşeni */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -158,23 +178,22 @@ const styles = StyleSheet.create({
   userInfo: {
     flex: 1,
     marginRight: 10,
-    marginTop: 14,
+    marginTop: 0,
+    marginLeft: -10,
   },
   iconContainer: {
     flexDirection: "row",
     justifyContent: "flex-end",
     gap: 10,
   },
-  userInfoContainer: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
+
   userName: {
     fontSize: 24,
     fontWeight: "bold",
+    marginBottom: -5,
   },
   userEmail: {
-    fontSize: 16,
+    fontSize: 13,
     color: "#555",
   },
   card: {
@@ -193,11 +212,11 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   logoutButton: {
-    marginTop: 30,
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 30,
     backgroundColor: "#FFA500",
+    borderRadius: 30,
+    paddingVertical: 15,
+    width: "50%",
+    alignItems: "center",
     alignSelf: "center",
   },
   logoutButtonText: {

@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   },
   notificationCircle: {
     position: "absolute",
-    right: -1,
+    right: 2,
     top: -5,
     backgroundColor: "#FFA500",
     borderRadius: 10,

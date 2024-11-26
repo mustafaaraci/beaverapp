@@ -1,6 +1,8 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const userModel = require("../models/userModel");
+const authMiddleware = require("../middleware/authMiddleware"); // Middleware'ı ekleyin
 const router = express.Router();
 
 // Kullanıcı kaydı için endpoint
@@ -44,7 +46,6 @@ router.post("/login", async (req, res) => {
     // Kullanıcıyı e-posta ile bul
     const user = await userModel.findOne({ email });
     if (!user) {
-      // Kullanıcı bulunamazsa
       return res
         .status(400)
         .json({ error: "Böyle bir kullanıcı adı bulunamadı!" });
@@ -53,22 +54,33 @@ router.post("/login", async (req, res) => {
     // Şifreyi kontrol et
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      // Şifre hatalıysa
       return res.status(400).json({ error: "Lütfen şifrenizi doğru giriniz!" });
     }
 
-    // Giriş başarılı
+    // Giriş başarılı, JWT oluştur
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
     res.status(200).json({
       message: "Giriş başarılı",
+      token, // Token'ı gönder
       userId: user._id,
       name: user.name,
       surname: user.surname,
+      email: user.email,
     });
   } catch (error) {
     res
       .status(500)
       .json({ error: "Giriş işlemi başarısız.", details: error.message });
   }
+});
+
+// Kullanıcı çıkışı için endpoint (isteğe bağlı)
+router.post("/logout", (req, res) => {
+  // Çıkış işlemi için genellikle token'ı istemci tarafından silmek yeterlidir.
+  res.status(200).json({ message: "Çıkış başarılı." });
 });
 
 module.exports = router;

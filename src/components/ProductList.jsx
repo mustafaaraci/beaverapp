@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -15,11 +15,12 @@ import Toast from "react-native-toast-message";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = (width - 22) / 2;
-const CARD_HEIGHT = 240;
+const CARD_HEIGHT = 254;
 
 const ProductList = ({ products, selectedCategory, navigation }) => {
   const dispatch = useDispatch();
-  const { favorites } = useSelector((state) => state.favorites); // Favori ürünleri al
+  const { favorites } = useSelector((state) => state.favorites);
+  const { currentUser } = useSelector((state) => state.users);
 
   // Seçili kategoride ürünleri filtrele
   const filteredProducts = selectedCategory
@@ -27,6 +28,18 @@ const ProductList = ({ products, selectedCategory, navigation }) => {
     : products;
 
   const handleToggleFavorite = (product) => {
+    //kullanıcı kontrolü
+    if (!currentUser) {
+      Toast.show({
+        text1: "Öncelikle giriş yapmalısınız!",
+        position: "top",
+        type: "error",
+        visibilityTime: 2000,
+        autoHide: true,
+      });
+      navigation.navigate("Login"); // Kullanıcıyı giriş ekranına yönlendir
+      return;
+    }
     dispatch(toggleFavorite(product)); // Favori durumunu değiştirmek için dispatch
 
     // Favori durumu kontrolü

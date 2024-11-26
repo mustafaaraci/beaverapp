@@ -21,21 +21,22 @@ import {
   refreshProducts,
 } from "../redux/productSlice";
 import { useNavigation } from "@react-navigation/native";
+import { Keyboard } from "react-native";
 
 const HomeScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const navigation = useNavigation();
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const products = useSelector((state) =>
     selectProductsByCategory(state, selectedCategory)
   );
+  const { status } = useSelector((state) => state.products);
 
+  // Ürünleri yükle
   useEffect(() => {
-    setLoading(true);
-    dispatch(fetchProducts()).then(() => setLoading(false));
+    dispatch(fetchProducts());
   }, [dispatch]);
 
   const onRefresh = () => {
@@ -45,24 +46,27 @@ const HomeScreen = () => {
       setRefreshing(false);
     });
   };
-
+  // Filtrelenmiş ürünler
   const filteredProducts = useMemo(() => {
+    if (!products) return [];
     return products.filter((product) =>
       product.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [products, searchTerm]);
 
-  const handleSearch = () => {
-    if (searchTerm) {
-      console.log("Arama Yapılıyor:", searchTerm);
-    } else {
-      console.log("Tüm ürünler gösteriliyor.");
-    }
-  };
-
+  //geri butonu arama ekranı
   const handleBack = () => {
     setSearchTerm("");
     setSelectedCategory(null); // Kategoriyi sıfırla
+    Keyboard.dismiss(); // Klavyeyi kapat
+  };
+
+  // Arama input kontrolu metin silindiğinde geri butonunu gizle ve klavyeyi kapat
+  const handleSearchInputChange = (text) => {
+    setSearchTerm(text);
+    if (text === "") {
+      handleBack();
+    }
   };
 
   return (
@@ -80,9 +84,10 @@ const HomeScreen = () => {
             placeholderTextColor="#cbd5e1"
             selectionColor="#FFA500"
             value={searchTerm}
-            onChangeText={setSearchTerm}
+            // onChangeText={setSearchTerm}
+            onChangeText={handleSearchInputChange}
           />
-          <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+          <TouchableOpacity style={styles.searchButton}>
             <Ionicons name="search" size={24} color="#FFA500" />
           </TouchableOpacity>
         </View>
@@ -105,7 +110,7 @@ const HomeScreen = () => {
         </View>
       )}
 
-      {loading ? (
+      {status === "loading" ? (
         <ActivityIndicator
           size="large"
           color="#FFA500"
@@ -131,7 +136,6 @@ const HomeScreen = () => {
           ListHeaderComponent={
             !searchTerm && (
               <View style={styles.sliderContainer}>
-                {/* slider */}
                 <ProductSlider />
               </View>
             )

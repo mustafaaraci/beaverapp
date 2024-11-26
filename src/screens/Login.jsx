@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   Modal,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../redux/userSlice";

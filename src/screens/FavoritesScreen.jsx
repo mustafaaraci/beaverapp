@@ -19,6 +19,8 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 const FavoritesScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { favorites } = useSelector((state) => state.favorites);
+  const { currentUser } = useSelector((state) => state.users);
+
   //sayfa yenilemek için
   // const { refreshing } = useSelector((state) => state.products);
 
@@ -113,8 +115,6 @@ const FavoritesScreen = ({ navigation }) => {
         </View>
       )}
 
-      {favorites.length > 0 && <View style={styles.headerSeparator} />}
-
       {favorites.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyMessageContainer}>
@@ -149,11 +149,11 @@ const FavoritesScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
-    padding: 16,
-    margin: -8,
+    backgroundColor: "#f8fafc",
+    padding: 20,
+    paddingBottom: 74,
+    margin: -12,
     marginTop: 0,
-    marginBottom: 48,
   },
   header: {
     flexDirection: "row",
@@ -165,8 +165,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#333",
-    paddingRight: 150,
+    flex: 1,
+    textAlign: "flex-end",
   },
+  backButton: {},
+
   removeAllButton: {
     backgroundColor: "#ea580c",
     borderRadius: 5,
@@ -179,16 +182,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
   },
-  headerSeparator: {
-    height: 1,
-    backgroundColor: "#FFA500",
-    marginBottom: 0,
-    shadowColor: "#FFA500",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
-    elevation: 2,
-  },
+
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
@@ -226,9 +220,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 2,
     padding: 10,
     marginTop: 6,
+    borderColor: "#FFA500",
+    borderWidth: 0.5,
   },
   cardHeader: {
     flexDirection: "row",

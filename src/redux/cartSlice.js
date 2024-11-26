@@ -45,8 +45,9 @@ const cartSlice = createSlice({
         state.items.splice(index, 1);
       }
     },
+    // Sepeti temizle
     clearCart: (state) => {
-      state.items = []; // Sepeti temizle
+      state.items = [];
     },
     increaseQuantity: (state, action) => {
       const existingItem = state.items.find(

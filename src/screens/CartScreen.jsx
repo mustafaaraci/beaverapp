@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -23,6 +23,9 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 const CartScreen = ({ navigation }) => {
   const cartItems = useSelector((state) => state.cart.items);
   const { currentUser } = useSelector((state) => state.users);
+
+  //console kullanıcı
+  // console.log("kullanıcı", currentUser);
 
   const dispatch = useDispatch();
   //sayfa yenilemek için
@@ -124,11 +127,29 @@ const CartScreen = ({ navigation }) => {
 
   const handleCheckout = () => {
     if (!currentUser) {
-      // Giriş yapılmamışsa giriş sayfasına yönlendir
+      // Kullanıcı giriş yapmamışsa login sayfasına yönlendir
+      Toast.show({
+        text1: "Öncelikle giriş yapmalısınız!",
+        type: "error",
+        position: "top",
+        visibilityTime: 2000,
+        autoHide: true,
+      });
       navigation.navigate("Login");
+    } else if (cartItems.length === 0) {
+      Toast.show({
+        text1: "Sepetinizde ürün bulunmuyor.",
+        type: "error",
+        position: "top",
+        visibilityTime: 2000,
+        autoHide: true,
+      });
     } else {
-      // Kullanıcı giriş yapmışsa ödeme sayfasına yönlendir
-      navigation.navigate("Payment");
+      // Ödeme sayfasına yönlendir
+      navigation.navigate("Payment", {
+        userId: currentUser.userId,
+        items: cartItems, // Sepet içeriğini ödeme sayfasına gönder
+      });
     }
   };
 
@@ -152,20 +173,13 @@ const CartScreen = ({ navigation }) => {
         </View>
       )}
 
-      {cartItems.length > 0 && <View style={styles.headerSeparator} />}
-
       {cartItems.length === 0 ? (
         <View style={styles.emptyContainer}>
+          <MaterialIcons name="shopping-cart" size={100} color="#ccc" />
           <View style={styles.emptyMessageContainer}>
             <Text style={styles.emptyMessage}>
               Sepetinizde ürün bulunmamaktadır!
             </Text>
-            <MaterialIcons
-              name="remove-shopping-cart"
-              size={24}
-              color="black"
-              style={styles.emptyIcon}
-            />
           </View>
           <TouchableOpacity
             style={styles.continueShoppingButton}
@@ -180,7 +194,7 @@ const CartScreen = ({ navigation }) => {
         <FlatList
           data={cartItems}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id + item.size}
+          keyExtractor={(item) => `${item.id}-${item.size}`} // Benzersiz anahtar
           //sayfa yenileme
           // refreshControl={
           //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -209,11 +223,12 @@ const CartScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
-    padding: 16,
-    margin: -8,
+    backgroundColor: "#f8fafc",
+    padding: 20,
+    margin: -12,
     marginTop: 0,
     marginBottom: 54,
+    //paddingBottom: 20,
   },
   header: {
     flexDirection: "row",
@@ -225,7 +240,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#333",
-    paddingRight: 170,
+    flex: 1,
+    textAlign: "flex-end",
   },
   clearButton: {
     backgroundColor: "#ea580c",
@@ -239,16 +255,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
   },
-  headerSeparator: {
-    height: 1,
-    backgroundColor: "#FFA500",
-    marginBottom: 0,
-    shadowColor: "#FFA500",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
-    elevation: 2,
-  },
+
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
@@ -287,7 +294,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 10,
     marginTop: 5,
-    elevation: 2,
+    borderColor: "#FFA500",
+    borderWidth: 0.5,
   },
   productImage: {
     width: 80,

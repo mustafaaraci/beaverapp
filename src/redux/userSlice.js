@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // AsyncStorage ekleyin
 
 // Kullanıcı kaydı için thunk
 export const registerUser = createAsyncThunk(
@@ -29,7 +30,11 @@ export const loginUser = createAsyncThunk(
         "http://192.168.1.10:5000/api/users/login",
         userData
       );
-      dispatch(setUser(response.data));
+
+      // Token'ı AsyncStorage'a kaydedin
+      await AsyncStorage.setItem("token", response.data.token);
+
+      dispatch(setUser(response.data)); // Kullanıcıyı ayarla
       return response.data;
     } catch (error) {
       console.log(error, "Giriş başarısız!");
@@ -43,8 +48,8 @@ export const loginUser = createAsyncThunk(
 // Kullanıcı çıkışı için thunk
 export const logoutUser = createAsyncThunk(
   "user/logout",
-  async (payload, { dispatch }) => {
-    // Burada gerekli çıkış işlemleri yapılabilir (örneğin, API çağrısı).
+  async (_, { dispatch }) => {
+    await AsyncStorage.removeItem("token"); // Token'ı kaldır
     dispatch(clearUser()); // Kullanıcıyı temizle
   }
 );
@@ -56,6 +61,7 @@ export const userSlice = createSlice({
     currentUser: null,
     loading: false,
     error: null,
+    token: null,
   },
   reducers: {
     clearError: (state) => {
@@ -63,9 +69,11 @@ export const userSlice = createSlice({
     },
     setUser: (state, action) => {
       state.currentUser = action.payload; // Kullanıcı bilgilerini ayarla
+      state.token = action.payload.token; // Token'ı sakla
     },
     clearUser: (state) => {
       state.currentUser = null; // Kullanıcıyı temizle
+      state.token = null; // Token'ı temizle
     },
   },
   extraReducers: (builder) => {
@@ -91,8 +99,8 @@ export const userSlice = createSlice({
         state.error = action.payload;
       })
       .addCase(logoutUser.fulfilled, (state) => {
-        // Oturum kapatıldığında yapılacak işlemler
         state.currentUser = null; // Kullanıcıyı temizle
+        state.token = null; // Token'ı kaldır
       });
   },
 });

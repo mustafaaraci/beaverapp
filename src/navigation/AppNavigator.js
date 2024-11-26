@@ -11,6 +11,9 @@ import Login from "../screens/Login";
 import Register from "../screens/Register";
 import DetailScreen from "../screens/DetailScreen";
 import PaymentScreen from "../screens/PaymentScreen";
+import MyOrdersScreen from "../screens/MyOrdersScreen";
+import AddressScreen from "../screens/AddressScreen";
+import ContactInfoScreen from "../screens/ContactInfoScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -38,6 +41,9 @@ const AppNavigator = () => {
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen name="Detail" component={DetailScreen} />
         <Stack.Screen name="Payment" component={PaymentScreen} />
+        <Stack.Screen name="MyOrders" component={MyOrdersScreen} />
+        <Stack.Screen name="Address" component={AddressScreen} />
+        <Stack.Screen name="ContactInfo" component={ContactInfoScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
